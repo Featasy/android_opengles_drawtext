@@ -7,6 +7,7 @@ import android.content.Context;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -47,11 +48,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
 
     ArrayList< GLSquare > aSquares_test;
 
-    GLSquare leftThird;
-
-    GLSquare middleThird;
-
-    GLSquare rightThird;
 
     //Matrices
     private final float[] mtrxProjection = new float[16];
@@ -91,44 +87,11 @@ public class GLRenderer implements GLSurfaceView.Renderer
         or perhaps there is a block adjustment needed in this project. In any case it is a Hello World!
         there on the screen. From here we become progressively more advanced.
          */
+
         mText_HelloWorld = new GLTextObject( "Hello World!",20,100,20,
                 new float[]{ 0.0f,0.0f,1.0f,1.0f }, true );
 
-        //Origin has been moved to the upper left
-        //In typical canvas fashion co-ordinates move in the positive directions
-        //down the Y and across the X to the right. Matching a SurfaceView co-ordinate system
-        float[] fSquareVertices = new float[] {
-                50f, 50f, 0f,
-                50f, 280f, 0f,
-                280f, 280f, 0f,
-                280f, 50f, 0f
-        };
-
-        float[] fSquareColours = new float[] {
-                .15f,0f,0f,0.05f,
-                .15f,0f,0f,0.05f,
-                .15f,0f,0f,0.05f,
-                .15f,0f,0f,0.05f
-        };
-
-        float[] fGreen = new float[] {
-                0f,.15f,0f,0.05f
-        };
-
-        float[] fBlue = new float[] {
-                0f,0f,.15f,0.05f
-        };
-
-        leftThird = new GLSquare( fSquareVertices, fSquareColours );
-        middleThird = leftThird.offset( 230, 0 );
-        middleThird.setColourData( fGreen );
-        rightThird = middleThird.offset( 230, 0 );
-        rightThird.setColourData(fBlue);
-
         aSquares_test = new ArrayList< GLSquare >( );
-        aSquares_test.add( leftThird );
-        aSquares_test.add( middleThird );
-        aSquares_test.add( rightThird );
 
 
 
@@ -172,10 +135,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
 
         GLES30.glUniformMatrix4fv( mtrxhandle, 1, false, mtrxProjectionAndView, 0 );
 
-        //drawLeftThird_test( leftThird );
-        //drawLeftThird_test( middleThird );
-        //drawLeftThird_test( rightThird );
-
         drawAllThirds( aSquares_test );
 
 
@@ -212,24 +171,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
         dNanos += System.nanoTime( ) - dNanosStart;
     }
 
-    public int getTextObjIndex( String sLookId, ArrayList< GLTextObject > al )
-    {
-        int dCount = 0;
-
-        for( GLTextObject sO : al )
-        {
-            if( sO.sID.equals( sLookId ) )
-            {
-                return dCount;
-            }
-            else
-            {
-                dCount++;
-            }
-        }
-
-        return -1;
-    }
 
     private void drawAllThirds( ArrayList< GLSquare > mSquareList )
     {
@@ -291,20 +232,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
             mIndicesAllThirds.position( 0 );
             mIndicesAllThirds.put( mIndicesThirds );
 
-            //Vertices
-            GLES30.glBindBuffer( GLES30.GL_ARRAY_BUFFER, mVBOIds_Squares_notext[0] );
-            //https://www.khronos.org/opengles/sdk/docs/man3/
-            //glBufferData will overwrite the buffer if one already exists
-            mVerticesAllThirds.position( 0 );
-            GLES30.glBufferData( GLES30.GL_ARRAY_BUFFER, leftThird.VERTEXSTRIDE * ( mVerticesThirds.length / 3 ),
-                    mVerticesAllThirds, GLES30.GL_STATIC_DRAW );
-
-            //Colors
-            mColoursAllThirds.position( 0 );
-            GLES30.glBindBuffer( GLES30.GL_ARRAY_BUFFER, mVBOIds_Squares_notext[1] );
-            GLES30.glBufferData ( GLES30.GL_ARRAY_BUFFER, leftThird.COLOURSTRIDE * ( mColoursThirds.length / 4 ),
-                    mColoursAllThirds, GLES30.GL_STATIC_DRAW );
-
             //Indices
             mIndicesAllThirds.position( 0 );
             GLES30.glBindBuffer ( GLES30.GL_ELEMENT_ARRAY_BUFFER, mVBOIds_Squares_notext[2] );
@@ -312,17 +239,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
                     mIndicesAllThirds, GLES30.GL_STATIC_DRAW );
 		}
 
-        GLES30.glBindBuffer ( GLES30.GL_ARRAY_BUFFER, mVBOIds_Squares_notext[0] );
-
-        GLES30.glEnableVertexAttribArray ( 0 );
-        GLES30.glVertexAttribPointer ( 0, leftThird.VERTEXSIZE,
-                GLES30.GL_FLOAT, false, leftThird.VERTEXSTRIDE, 0 );
-
-        GLES30.glBindBuffer ( GLES30.GL_ARRAY_BUFFER, mVBOIds_Squares_notext[1] );
-
-        GLES30.glEnableVertexAttribArray ( 1 );
-        GLES30.glVertexAttribPointer ( 1, leftThird.COLOURSIZE,
-                GLES30.GL_FLOAT, false, leftThird.COLOURSTRIDE, 0 );
 
         GLES30.glBindBuffer ( GLES30.GL_ELEMENT_ARRAY_BUFFER, mVBOIds_Squares_notext[2] );
 
@@ -336,72 +252,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
         GLES30.glBindBuffer ( GLES30.GL_ELEMENT_ARRAY_BUFFER, 0 );
     }
 
-    private void drawLeftThird_test( GLSquare mSquareParam )
-    {
-        if ( mVBOIds_Square_notex[0] == 0 && mVBOIds_Square_notex[1] == 0 && mVBOIds_Square_notex[2] == 0 )
-        {
-            //Build Bytes and store in OpenGL Buffer Space
-            FloatBuffer mVertices = ByteBuffer.allocateDirect( mSquareParam.mVerticesData.length * 4)
-                    .order ( ByteOrder.nativeOrder() ).asFloatBuffer( );
-
-            FloatBuffer mColours = ByteBuffer.allocateDirect ( mSquareParam.mColourData.length * 4 )
-                    .order ( ByteOrder.nativeOrder( ) ).asFloatBuffer( );
-
-            FloatBuffer mTexture = ByteBuffer.allocateDirect ( mSquareParam.mTextureData.length * 4 )
-                    .order ( ByteOrder.nativeOrder( ) ).asFloatBuffer( );
-
-            mVertices.put ( mSquareParam.mVerticesData ).position ( 0 );
-
-            mColours.put( mSquareParam.mColourData ).position ( 0 );
-
-            mTexture.put( mSquareParam.mTextureData ).position ( 0 );
-
-            GLES30.glGenBuffers( 3, mVBOIds_Square_notex, 0 );
-
-            //Vertices
-            GLES30.glBindBuffer( GLES30.GL_ARRAY_BUFFER, mVBOIds_Square_notex[0] );
-            //https://www.khronos.org/opengles/sdk/docs/man3/
-            //glBufferData will overwrite the buffer if one already exists
-            mVertices.position ( 0 );
-            GLES30.glBufferData( GLES30.GL_ARRAY_BUFFER, leftThird.VERTEXSTRIDE * leftThird.numVertices( ),
-                    mVertices, GLES30.GL_STATIC_DRAW );
-
-            //Colors
-            mColours.position( 0 );
-            GLES30.glBindBuffer( GLES30.GL_ARRAY_BUFFER, mVBOIds_Square_notex[1] );
-            GLES30.glBufferData ( GLES30.GL_ARRAY_BUFFER, leftThird.COLOURSTRIDE * leftThird.numVertices( ),
-                    mColours, GLES30.GL_STATIC_DRAW );
-
-            //Indices
-            mVertices.position ( 0 );
-            GLES30.glBindBuffer ( GLES30.GL_ELEMENT_ARRAY_BUFFER, mVBOIds_Square_notex[2] );
-            GLES30.glBufferData ( GLES30.GL_ELEMENT_ARRAY_BUFFER, 2 * leftThird.mIndicesData.length,
-                    leftThird.mIndices, GLES30.GL_STATIC_DRAW );
-        }
-
-        GLES30.glBindBuffer ( GLES30.GL_ARRAY_BUFFER, mVBOIds_Square_notex[0] );
-
-        GLES30.glEnableVertexAttribArray ( 0 );
-        GLES30.glVertexAttribPointer ( 0, leftThird.VERTEXSIZE,
-                GLES30.GL_FLOAT, false, leftThird.VERTEXSTRIDE, 0 );
-
-        GLES30.glBindBuffer ( GLES30.GL_ARRAY_BUFFER, mVBOIds_Square_notex[1] );
-
-        GLES30.glEnableVertexAttribArray ( 1 );
-        GLES30.glVertexAttribPointer ( 1, leftThird.COLOURSIZE,
-                GLES30.GL_FLOAT, false, leftThird.COLOURSTRIDE, 0 );
-
-        GLES30.glBindBuffer ( GLES30.GL_ELEMENT_ARRAY_BUFFER, mVBOIds_Square_notex[2] );
-
-        GLES30.glDrawElements ( GLES30.GL_TRIANGLES, leftThird.mIndicesData.length,
-                GLES30.GL_UNSIGNED_SHORT, 0 );
-
-        GLES30.glDisableVertexAttribArray ( 0 );
-        GLES30.glDisableVertexAttribArray ( 1 );
-
-        GLES30.glBindBuffer ( GLES30.GL_ARRAY_BUFFER, 0 );
-        GLES30.glBindBuffer ( GLES30.GL_ELEMENT_ARRAY_BUFFER, 0 );
-    }
 
     private int text1Indices = 0;
     private void drawOneText_test( GLTextObject mParamTxtObj )

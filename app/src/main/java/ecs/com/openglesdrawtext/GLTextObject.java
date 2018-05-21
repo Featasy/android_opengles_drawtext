@@ -21,21 +21,6 @@ public class GLTextObject {
     public ArrayList< GLSquare > aSquares;
 
 
-    public GLTextObject( )
-    {
-        sText = "default";
-
-        x = 0.0f;
-
-        y = 0.0f;
-
-        fColour = new float[] { 1f, 1f, 1f, 1f };
-
-        aSquares = new ArrayList< GLSquare > ( );
-
-        calcSquares( false );
-    }
-
     public GLTextObject( String txt, float xcoord, float ycoord, float psize, float[] fcolour,
                          boolean isGradient )
     {
@@ -53,13 +38,6 @@ public class GLTextObject {
 
         calcSquares( isGradient );
     }
-
-	public boolean validate( )
-	{
-		if( sText.compareTo( "" ) == 0 ) return false;
-
-		return true;
-	}
 
     public void calcSquares( boolean isGradient )
     {
@@ -110,10 +88,6 @@ public class GLTextObject {
                         fColour[0], fColour[1], fColour[2], fColour[3],
                 };
             }
-
-
-
-
 
             //Calculate the texture co-ordinates. Let us start with 0's and then build
             int dRow = 1;

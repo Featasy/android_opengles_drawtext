@@ -90,65 +90,6 @@ public class GLESShader
       return dShader;
    }
 
-   public static int loadProgram ( String sVertShaderSrc, String sFragShaderSrc )
-   {
-      int dVertexShader;
-
-      int dFragmentShader;
-
-      int dProgramObject;
-
-      int[] dLinked = new int[1];
-
-      dVertexShader = loadShader ( GLES30.GL_VERTEX_SHADER, sVertShaderSrc );
-
-      if ( dVertexShader == 0 )
-      {
-         return 0;
-      }
-
-      dFragmentShader = loadShader ( GLES30.GL_FRAGMENT_SHADER, sFragShaderSrc );
-
-      if ( dFragmentShader == 0 )
-      {
-         GLES30.glDeleteShader ( dVertexShader );
-
-         return 0;
-      }
-
-      dProgramObject = GLES30.glCreateProgram();
-
-      if ( dProgramObject == 0 )
-      {
-         return 0;
-      }
-
-      GLES30.glAttachShader ( dProgramObject, dVertexShader );
-
-      GLES30.glAttachShader ( dProgramObject, dFragmentShader );
-
-      GLES30.glLinkProgram( dProgramObject );
-
-      GLES30.glGetProgramiv(dProgramObject, GLES30.GL_LINK_STATUS, dLinked, 0);
-
-      if ( dLinked[0] == 0 )
-      {
-         Log.e ( "GLESShader", "Error linking program:" );
-
-         Log.e ( "GLESShader", GLES30.glGetProgramInfoLog ( dProgramObject ) );
-
-         GLES30.glDeleteProgram ( dProgramObject );
-
-         return 0;
-      }
-
-      GLES30.glDeleteShader(dVertexShader);
-
-      GLES30.glDeleteShader(dFragmentShader);
-
-      return dProgramObject;
-   }
-
    public static int loadProgramFromAsset ( Context mContext, String sVertexShaderFileName, String sFragShaderFileName )
    {
       int dVertexShader;
