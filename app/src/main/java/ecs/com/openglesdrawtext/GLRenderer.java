@@ -32,8 +32,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
 
     private int [] mVBOIds_Square_notex = new int[3];
 
-    private int [] mVBOIds_Squares_notext;
-
     private int mWidth;
 
     private int mHeight;
@@ -44,9 +42,7 @@ public class GLRenderer implements GLSurfaceView.Renderer
 
     GLTextObject mText_HelloWorld;
 
-    ArrayList< GLTextObject > aTextObjects;
-
-    ArrayList< GLSquare > aSquares_test;
+//    ArrayList< GLSquare > aSquares_test;
 
 
     //Matrices
@@ -54,14 +50,8 @@ public class GLRenderer implements GLSurfaceView.Renderer
     private final float[] mtrxView = new float[16];
     private final float[] mtrxProjectionAndView = new float[16];
 
-    float[] mVerticesThirds;
-    float[] mColoursThirds;
-    short[] mIndicesThirds = new short[0];
-
     int mBaseMapTexId;
-    int mLightMapTexId;
     int mBaseMapLoc;
-    int mLightMapLoc;
 
     public GLRenderer ( Context mParamContext )
     {
@@ -69,8 +59,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
         GLESShader.mContext = mParamContext;
     }
 
-    int mBackgroundMapLoc;
-    int mBackgroundTexId;
     public void onSurfaceCreated ( GL10 glUnused, EGLConfig config )
     {
         mProgramObject_Triangles_notex = GLESShader.loadProgramFromAsset( mContext,
@@ -91,10 +79,7 @@ public class GLRenderer implements GLSurfaceView.Renderer
         mText_HelloWorld = new GLTextObject( "Hello World!",20,100,20,
                 new float[]{ 0.0f,0.0f,1.0f,1.0f }, true );
 
-        aSquares_test = new ArrayList< GLSquare >( );
-
-
-
+//        aSquares_test = new ArrayList< GLSquare >( );
 
 
         mProgramObject_20pt_black_text = GLESShader.loadProgramFromAsset( mContext,
@@ -108,15 +93,9 @@ public class GLRenderer implements GLSurfaceView.Renderer
 
         // Get the sampler locations
         mBaseMapLoc = GLES30.glGetUniformLocation ( mProgramObject_20pt_black_text, "s_baseMap" );
-        mLightMapLoc = GLES30.glGetUniformLocation ( mProgramObject_20pt_black_text, "s_lightMap" );
-        mBackgroundMapLoc = GLES30.glGetUniformLocation ( mProgramObject_20pt_black_text, "s_lightMap" );
 
         // Load the texture images from 'assets'
         mBaseMapTexId = GLESShader.loadTextureFromAsset( "fontmaps/20pt_LatinBasic.png" );
-        mLightMapTexId = GLESShader.loadTextureFromAsset( "textures/lightmap.png" );
-        mBackgroundTexId = GLESShader.loadTextureFromAsset( "textures/background.png" );
-
-
 
         GLES30.glClearColor ( 255f, 255f, 255f, 1f );
     }
@@ -134,10 +113,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
         int mtrxhandle = GLES30.glGetUniformLocation( mProgramObject_Triangles_notex, "OrthoMatrix" );
 
         GLES30.glUniformMatrix4fv( mtrxhandle, 1, false, mtrxProjectionAndView, 0 );
-
-        drawAllThirds( aSquares_test );
-
-
 
         GLES30.glUseProgram( mProgramObject_20pt_black_text );
 
@@ -169,87 +144,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
         }
 
         dNanos += System.nanoTime( ) - dNanosStart;
-    }
-
-
-    private void drawAllThirds( ArrayList< GLSquare > mSquareList )
-    {
-		if( mVBOIds_Squares_notext == null )
-		{
-			mVBOIds_Squares_notext = new int[3];
-
-            GLES30.glGenBuffers( 3, mVBOIds_Squares_notext, 0 );
-
-            //Build Bytes and store in OpenGL Buffer Space
-            FloatBuffer mVerticesAllThirds = ByteBuffer.allocateDirect( ( 12 * 4 ) * mSquareList.size( ) )
-                    .order ( ByteOrder.nativeOrder() ).asFloatBuffer( );
-
-            FloatBuffer mColoursAllThirds = ByteBuffer.allocateDirect ( ( 16 * 4 ) * mSquareList.size( ) )
-                    .order ( ByteOrder.nativeOrder( ) ).asFloatBuffer();
-
-            ShortBuffer mIndicesAllThirds = ByteBuffer.allocateDirect ( ( 6 * 2 ) * mSquareList.size( ) )
-                    .order ( ByteOrder.nativeOrder( ) ).asShortBuffer( );
-
-            ArrayList aCrunchVerts = new ArrayList< float[] >( );
-            ArrayList aCrunchColours = new ArrayList< float[] >( );
-            ArrayList aCrunchIndices = new ArrayList< float[] >( );
-
-            for( GLSquare s : mSquareList )
-                aCrunchVerts.add( s.mVerticesData );
-
-            mVerticesThirds = ArrayUtilChristopo.combFloat( aCrunchVerts );
-
-            for( GLSquare s : mSquareList )
-                aCrunchColours.add( s.mColourData );
-
-            mColoursThirds = ArrayUtilChristopo.combFloat( aCrunchColours );
-
-            int dSquareCount = 0;
-
-			while( dSquareCount < mSquareList.size( ) )
-            {
-                short[] mIndicesData =
-                {
-                        0, 1, 2, 0, 2, 3
-                };
-
-                for( int x = 0; x < mIndicesData.length; x++ )
-                    mIndicesData[x] += ( 4 * dSquareCount );
-
-                aCrunchIndices.add( mIndicesData );
-
-                dSquareCount++;
-            }
-
-            mIndicesThirds = ArrayUtilChristopo.combShort( aCrunchIndices );
-
-            mVerticesAllThirds.position( 0 );
-            mVerticesAllThirds.put( mVerticesThirds );
-
-            mColoursAllThirds.position( 0 );
-            mColoursAllThirds.put( mColoursThirds );
-
-            mIndicesAllThirds.position( 0 );
-            mIndicesAllThirds.put( mIndicesThirds );
-
-            //Indices
-            mIndicesAllThirds.position( 0 );
-            GLES30.glBindBuffer ( GLES30.GL_ELEMENT_ARRAY_BUFFER, mVBOIds_Squares_notext[2] );
-            GLES30.glBufferData ( GLES30.GL_ELEMENT_ARRAY_BUFFER, 2 * mIndicesThirds.length,
-                    mIndicesAllThirds, GLES30.GL_STATIC_DRAW );
-		}
-
-
-        GLES30.glBindBuffer ( GLES30.GL_ELEMENT_ARRAY_BUFFER, mVBOIds_Squares_notext[2] );
-
-        GLES30.glDrawElements ( GLES30.GL_TRIANGLES, mIndicesThirds.length,
-                GLES30.GL_UNSIGNED_SHORT, 0 );
-
-        GLES30.glDisableVertexAttribArray ( 0 );
-        GLES30.glDisableVertexAttribArray ( 1 );
-
-        GLES30.glBindBuffer ( GLES30.GL_ARRAY_BUFFER, 0 );
-        GLES30.glBindBuffer ( GLES30.GL_ELEMENT_ARRAY_BUFFER, 0 );
     }
 
 
@@ -292,8 +186,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
             for( GLSquare s : mParamTxtObj.aSquares )
                 aCrunchTexture.add( s.mTextureData );
 
-
-
             float[] mVerticesData = ArrayUtilChristopo.combFloat( aCrunchVerts );
 
             float[] mColourData = ArrayUtilChristopo.combFloat( aCrunchColours );
@@ -302,11 +194,7 @@ public class GLRenderer implements GLSurfaceView.Renderer
 
             short[] mIndicesData = ArrayUtilChristopo.combShort( aCrunchIndices );
 
-
-
             text1Indices = mIndicesData.length;
-
-
 
             //Build Bytes and store in OpenGL Buffer Space
             FloatBuffer mVertices = ByteBuffer.allocateDirect( ( mVerticesData.length * 4 ) )
@@ -374,9 +262,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
         GLES30.glVertexAttribPointer(3, GLSquare.TEXTURESIZE,
                 GLES30.GL_FLOAT, false, GLSquare.TEXTURESTRIDE, 0 );
 
-
-
-
         GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, mVBOIds_text1[2]);
 
 
@@ -386,13 +271,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
 
         // Set the base map sampler to texture unit to 0
         GLES30.glUniform1i(mBaseMapLoc, 0);
-
-        // Bind the light map
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE1);
-        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, mLightMapTexId);
-
-        // Set the light map sampler to texture unit 1
-        GLES30.glUniform1i(mLightMapLoc, 1);
 
         GLES30.glDrawElements( GLES30.GL_TRIANGLES, text1Indices,
                 GLES30.GL_UNSIGNED_SHORT, 0 );
@@ -412,9 +290,6 @@ public class GLRenderer implements GLSurfaceView.Renderer
             mtrxView[i] = 0.0f;
             mtrxProjectionAndView[i] = 0.0f;
         }
-
-        //Origin is lower left
-        //Matrix.orthoM( mtrxProjection, 0, 0f, mWidth, 0.0f, mHeight, 0, 50 );
 
         //Origin is upper left
         Matrix.orthoM( mtrxProjection, 0, 0f, mWidth, mHeight, 0.0f, 0, 50 );
